@@ -3,6 +3,12 @@
 
 variable "app_name" {}
 variable "app_environment" {}
+variable "region" {}
+
+# workaround for -gov regions
+locals {
+  arn = can(regex("-gov-", var.region)) ? "aws-us-gov" : "aws"
+}
 
 # create the bucket
 resource "aws_s3_bucket" "transit_bucket" {
@@ -44,8 +50,8 @@ resource "aws_iam_policy" "transit_policy" {
           "s3:DeleteObject"
         ],
         "Resource" : [
-          "arn:aws:s3:::*/*",
-          "arn:aws:s3:::transit"
+          "arn:${local.arn}:s3:::*/*",
+          "arn:${local.arn}:s3:::transit"
         ]
       }
     ]
@@ -86,7 +92,7 @@ resource "aws_iam_role_policy_attachment" "transit_policy" {
 
 resource "aws_iam_role_policy_attachment" "cloud_watch_policy" {
   role       = aws_iam_role.transit_role.name
-  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+  policy_arn = "arn:${local.arn}:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
 output "transit_role_name" {

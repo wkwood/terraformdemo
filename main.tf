@@ -26,6 +26,7 @@ module "S3" {
   source          = "./S3"
   app_name        = var.app_name
   app_environment = var.app_environment
+  region          = var.aws_region
 }
 
 module "secrets" {
