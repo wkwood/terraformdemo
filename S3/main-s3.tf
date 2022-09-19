@@ -12,7 +12,7 @@ locals {
 
 # create the bucket
 resource "aws_s3_bucket" "transit_bucket" {
-  bucket = "transit"
+  bucket = "transitTest"
   # comment out the following line
   force_destroy = true
   tags = {
