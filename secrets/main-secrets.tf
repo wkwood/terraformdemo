@@ -13,10 +13,27 @@ resource "random_password" "password" {
   override_special = "_%@"
 }
 
-# Creating a AWS secret for passwords, passwordDB
+#
+# workaround for issue where a secret isn't deleted immediately, we'll assign it a unique
+# 6 digit number for the suffix
+#
 
-resource "aws_secretsmanager_secret" "passwordDB" {
-  name = "${lower(var.app_name)}-${var.app_environment}-rds-credentials"
+resource "random_integer" "suffix" {
+  min = 1
+  max = 999999
+  keepers = {
+    first = "${timestamp()}"
+  }
+}
+
+locals {
+  secret_name = "${lower(var.app_name)}-${var.app_environment}-rds-creds-${resource.random_integer.suffix.result}"
+}
+
+# Creating a AWS secret for passwords, passwordEntry
+
+resource "aws_secretsmanager_secret" "passwordEntry" {
+  name = local.secret_name
   tags = {
     Name        = "${lower(var.app_name)}-${var.app_environment}-rds-credentials"
     Environment = var.app_environment
@@ -27,7 +44,7 @@ resource "aws_secretsmanager_secret" "passwordDB" {
 # Create an AWS secret version for what we're saving
 
 resource "aws_secretsmanager_secret_version" "sversion" {
-  secret_id     = aws_secretsmanager_secret.passwordDB.id
+  secret_id     = aws_secretsmanager_secret.passwordEntry.id
   secret_string = <<EOF
    {
     "username": "sa",
@@ -38,14 +55,14 @@ EOF
 
 # Import the AWS secrets created previously using arn.
 
-data "aws_secretsmanager_secret" "passwordDB" {
-  arn = aws_secretsmanager_secret.passwordDB.arn
+data "aws_secretsmanager_secret" "passwordEntry" {
+  arn = aws_secretsmanager_secret.passwordEntry.arn
 }
 
 # Importing the AWS secret version created previously using arn.
 
 data "aws_secretsmanager_secret_version" "creds" {
-  secret_id = data.aws_secretsmanager_secret.passwordDB.arn
+  secret_id = data.aws_secretsmanager_secret.passwordEntry.arn
 }
 
 # After importing the secret store it into Locals
