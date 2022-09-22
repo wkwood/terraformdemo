@@ -20,7 +20,7 @@ timezone      = "Pacific Standard Time" # SQL Server/Windows EC2 instance specif
 # Windows Virtual Machine
 windows_instance_name               = "devwinsrv01"
 windows_instance_class              = "t3.xlarge"
-rds_instance_class                  = "db.t3.xlarge"
+rds_instance_class                  = "db.t3.large"
 windows_associate_public_ip_address = true
 windows_root_volume_size            = 30
 windows_volume_type                 = "gp2"
