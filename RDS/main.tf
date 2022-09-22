@@ -4,7 +4,7 @@ variable "rds_instance_class" {
 }
 
 variable "allocated_storage" {
-  default = 10
+  default = 50
   type    = number
 }
 
